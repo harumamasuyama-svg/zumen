@@ -88,7 +88,7 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand"><img src="/zumen-logo.png" alt="ZUMEN" /><span>Plan editor and 3D preview</span></div>
+        <div className="brand"><img src={`${import.meta.env.BASE_URL}zumen-logo.png`} alt="ZUMEN" /><span>Plan editor and 3D preview</span></div>
         <div className="menuGroup">
           <label className="command"><Upload size={16} />Import<input type="file" accept="image/png,image/jpeg,application/pdf" onChange={(e) => e.target.files?.[0] && void loadDrawing(e.target.files[0])} /></label>
           <button onClick={saveJson}><Save size={16} />Save</button>
