@@ -4,7 +4,6 @@ import { DrawingCanvas, labelFor } from './components/DrawingCanvas';
 import { ThreePreview } from './components/ThreePreview';
 import { createDemoShapes, createProject } from './lib/defaults';
 import { clonePlan, fileToPlanImage } from './lib/pdf';
-import { exportComparisonDocx, exportComparisonPdf, exportPlanPng } from './lib/exporters';
 import type { CompareLayout, PlanState, ProjectState, ThreeMode, Tool, ViewMode } from './types';
 
 const tools: Tool[] = ['select', 'pan', 'wall', 'partition', 'door', 'slidingDoor', 'toilet', 'urinal', 'sink', 'kitchen', 'desk', 'chair', 'dimension', 'text', 'eraser'];
@@ -71,10 +70,25 @@ export function App() {
     commit(loaded);
   };
 
+  const exportPng = async () => {
+    const { exportPlanPng } = await import('./lib/exporters');
+    await exportPlanPng(project);
+  };
+
+  const exportPdf = async () => {
+    const { exportComparisonPdf } = await import('./lib/exporters');
+    await exportComparisonPdf(project, compareLayout === 'side' ? 'l' : 'p');
+  };
+
+  const exportWord = async () => {
+    const { exportComparisonDocx } = await import('./lib/exporters');
+    await exportComparisonDocx(project, compareLayout === 'side' ? 'landscape' : 'portrait');
+  };
+
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand"><img src="./zumen-logo.png" alt="ZUMEN" /><span>Plan editor and 3D preview</span></div>
+        <div className="brand"><img src="/zumen-logo.png" alt="ZUMEN" /><span>Plan editor and 3D preview</span></div>
         <div className="menuGroup">
           <label className="command"><Upload size={16} />Import<input type="file" accept="image/png,image/jpeg,application/pdf" onChange={(e) => e.target.files?.[0] && void loadDrawing(e.target.files[0])} /></label>
           <button onClick={saveJson}><Save size={16} />Save</button>
@@ -84,9 +98,9 @@ export function App() {
           <button onClick={redo} disabled={!future.length}><RotateCw size={16} />Redo</button>
         </div>
         <div className="menuGroup right">
-          <button onClick={() => exportPlanPng(project)}><FileImage size={16} />PNG</button>
-          <button onClick={() => exportComparisonPdf(project, compareLayout === 'side' ? 'l' : 'p')}><FileDown size={16} />PDF</button>
-          <button onClick={() => exportComparisonDocx(project, compareLayout === 'side' ? 'landscape' : 'portrait')}><Download size={16} />Word</button>
+          <button onClick={() => void exportPng()}><FileImage size={16} />PNG</button>
+          <button onClick={() => void exportPdf()}><FileDown size={16} />PDF</button>
+          <button onClick={() => void exportWord()}><Download size={16} />Word</button>
         </div>
       </header>
 
