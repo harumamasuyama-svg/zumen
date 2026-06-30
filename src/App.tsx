@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BringToFront, Download, Eraser, FileDown, FileImage, FolderOpen, Grid2X2, History, MousePointer2, Move, PanelLeft, RotateCcw, RotateCw, Save, Type, Upload } from 'lucide-react';
+import { BringToFront, Download, Eraser, FileDown, FileImage, FolderOpen, Grid2X2, History, MousePointer2, Move, RotateCcw, RotateCw, Save, Type, Upload } from 'lucide-react';
 import { DrawingCanvas, labelFor } from './components/DrawingCanvas';
 import { ThreePreview } from './components/ThreePreview';
 import { createDemoShapes, createProject } from './lib/defaults';
@@ -60,23 +60,25 @@ export function App() {
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'ZUMEN-project.json'; a.click(); URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = 'ZUMEN-project.json';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const loadJson = async (file: File) => {
-    const text = await file.text();
-    const loaded = JSON.parse(text) as ProjectState;
+    const loaded = JSON.parse(await file.text()) as ProjectState;
     commit(loaded);
   };
 
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand"><img src="./zumen-logo.png" alt="ZUMEN" /><span>改修提案 図面エディタ</span></div>
+        <div className="brand"><img src="./zumen-logo.png" alt="ZUMEN" /><span>Plan editor and 3D preview</span></div>
         <div className="menuGroup">
-          <label className="command"><Upload size={16} />図面読込<input type="file" accept="image/png,image/jpeg,application/pdf" onChange={(e) => e.target.files?.[0] && void loadDrawing(e.target.files[0])} /></label>
-          <button onClick={saveJson}><Save size={16} />保存</button>
-          <button onClick={() => importProjectRef.current?.click()}><FolderOpen size={16} />読込</button>
+          <label className="command"><Upload size={16} />Import<input type="file" accept="image/png,image/jpeg,application/pdf" onChange={(e) => e.target.files?.[0] && void loadDrawing(e.target.files[0])} /></label>
+          <button onClick={saveJson}><Save size={16} />Save</button>
+          <button onClick={() => importProjectRef.current?.click()}><FolderOpen size={16} />Open</button>
           <input ref={importProjectRef} hidden type="file" accept="application/json" onChange={(e) => e.target.files?.[0] && void loadJson(e.target.files[0])} />
           <button onClick={undo} disabled={!history.length}><RotateCcw size={16} />Undo</button>
           <button onClick={redo} disabled={!future.length}><RotateCw size={16} />Redo</button>
@@ -89,15 +91,15 @@ export function App() {
       </header>
 
       <aside className="toolbar">
-        <button className="wide" onClick={seedDemo}><Grid2X2 size={17} />サンプル</button>
+        <button className="wide" onClick={seedDemo}><Grid2X2 size={17} />Sample</button>
         {tools.map((item) => <button key={item} className={tool === item ? 'active' : ''} onClick={() => setTool(item)} title={labelFor(item)}>{iconFor(item)}<span>{labelFor(item)}</span></button>)}
       </aside>
 
       <main className="workspace">
         <div className="workspaceTabs">
-          <button className={view === 'edit' ? 'active' : ''} onClick={() => setView('edit')}>編集</button>
-          <button className={view === 'compare' ? 'active' : ''} onClick={() => setView('compare')}>改修前後比較</button>
-          <button className={view === 'split3d' ? 'active' : ''} onClick={() => setView('split3d')}>平面図 + 3D</button>
+          <button className={view === 'edit' ? 'active' : ''} onClick={() => setView('edit')}>Edit</button>
+          <button className={view === 'compare' ? 'active' : ''} onClick={() => setView('compare')}>Before / After</button>
+          <button className={view === 'split3d' ? 'active' : ''} onClick={() => setView('split3d')}>Plan + 3D</button>
         </div>
         {view === 'edit' && <DrawingCanvas plan={activePlan} tool={tool} selectedId={selectedId} onChange={updateActivePlan} onSelect={setSelectedId} />}
         {view === 'compare' && <Comparison before={project.before} after={project.after} layout={compareLayout} />}
@@ -106,28 +108,28 @@ export function App() {
 
       <aside className="properties">
         <section>
-          <h2>状態</h2>
-          <div className="segmented"><button className={project.activeRevision === 'before' ? 'active' : ''} onClick={() => setProject({ ...project, activeRevision: 'before' })}>改修前</button><button className={project.activeRevision === 'after' ? 'active' : ''} onClick={() => setProject({ ...project, activeRevision: 'after' })}>改修後</button></div>
-          <button className="primary" onClick={saveBefore}>現在を改修前として保存</button>
-          <button className="primary ghost" onClick={saveAfter}>現在を改修後として保存</button>
+          <h2>Revision</h2>
+          <div className="segmented"><button className={project.activeRevision === 'before' ? 'active' : ''} onClick={() => setProject({ ...project, activeRevision: 'before' })}>Before</button><button className={project.activeRevision === 'after' ? 'active' : ''} onClick={() => setProject({ ...project, activeRevision: 'after' })}>After</button></div>
+          <button className="primary" onClick={saveBefore}>Save current as before</button>
+          <button className="primary ghost" onClick={saveAfter}>Save current as after</button>
         </section>
         <section>
-          <h2>表示</h2>
-          <label>比較方法</label>
-          <select value={compareLayout} onChange={(e) => setCompareLayout(e.target.value as CompareLayout)}><option value="side">左右比較</option><option value="stack">上下比較</option><option value="overlay">重ね合わせ</option></select>
-          <label>3D表示</label>
-          <select value={threeMode} onChange={(e) => setThreeMode(e.target.value as ThreeMode)}><option value="bird">鳥瞰図</option><option value="iso">アイソメ図</option><option value="walk">ウォークスルー</option></select>
+          <h2>View</h2>
+          <label>Compare layout</label>
+          <select value={compareLayout} onChange={(e) => setCompareLayout(e.target.value as CompareLayout)}><option value="side">Side by side</option><option value="stack">Top and bottom</option><option value="overlay">Overlay</option></select>
+          <label>3D mode</label>
+          <select value={threeMode} onChange={(e) => setThreeMode(e.target.value as ThreeMode)}><option value="bird">Bird view</option><option value="iso">Isometric</option><option value="walk">Walkthrough</option></select>
         </section>
         <section>
-          <h2>物件情報</h2>
-          <label>タイトル</label>
+          <h2>Project</h2>
+          <label>Title</label>
           <input value={project.name} onChange={(e) => setProject({ ...project, name: e.target.value })} />
-          <label>コメント</label>
+          <label>Comments</label>
           <textarea value={project.comments} onChange={(e) => setProject({ ...project, comments: e.target.value })} />
         </section>
         <section>
-          <h2>選択部品</h2>
-          {selected ? <div className="info"><b>{labelFor(selected.kind)}</b><span>X {Math.round(selected.x)} / Y {Math.round(selected.y)}</span><span>{Math.round(selected.width)} x {Math.round(selected.height)}</span></div> : <p className="muted">部品を選択してください。</p>}
+          <h2>Selection</h2>
+          {selected ? <div className="info"><b>{labelFor(selected.kind)}</b><span>X {Math.round(selected.x)} / Y {Math.round(selected.y)}</span><span>{Math.round(selected.width)} x {Math.round(selected.height)}</span></div> : <p className="muted">Select an item on the plan.</p>}
         </section>
       </aside>
     </div>
@@ -136,7 +138,7 @@ export function App() {
 
 function Comparison({ before, after, layout }: { before: PlanState; after: PlanState; layout: CompareLayout }) {
   if (layout === 'overlay') return <div className="compare overlay"><MiniPlan plan={before} faded /><MiniPlan plan={after} /></div>;
-  return <div className={'compare ' + layout}><MiniPlan title="改修前" plan={before} /><MiniPlan title="改修後" plan={after} /></div>;
+  return <div className={'compare ' + layout}><MiniPlan title="Before" plan={before} /><MiniPlan title="After" plan={after} /></div>;
 }
 
 function MiniPlan({ plan, title, faded }: { plan: PlanState; title?: string; faded?: boolean }) {

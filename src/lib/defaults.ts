@@ -1,7 +1,7 @@
 import type { PlanShape, ProjectState } from '../types';
 
 export const createProject = (): ProjectState => ({
-  name: 'ZUMEN 改修提案',
+  name: 'ZUMEN proposal',
   before: { shapes: [] },
   after: { shapes: [] },
   activeRevision: 'after',
